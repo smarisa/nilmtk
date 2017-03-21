@@ -14,7 +14,10 @@ from nilmtk.datastore import HDFDataStore, CSVDataStore
 
 # Python 2/3 compatibility
 from six import iteritems
-from past.builtins import basestring
+try:
+  from past.builtins import basestring
+except ImportError:
+  basestring = str
 
 
 def show_versions():

@@ -18,10 +18,10 @@ notebooks/*.h5
 .DS_Store
 
 # Ignoring Local datasets: 
-data/REDD
-data/ukdale
-data/fortum
+data/*
 *.h5
 *.tar
 *.dat
 
+# Local bashrc
+bashrc.sh

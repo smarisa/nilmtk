@@ -7,3 +7,5 @@ from .eco.convert_eco import convert_eco
 from .greend.convert_greend import convert_greend
 from .hes.convert_hes import convert_hes
 from .refit.convert_refit import convert_refit
+from .fortum.convert_fortum import convert_fortum
+from .sortd.convert_sortd import convert_sortd

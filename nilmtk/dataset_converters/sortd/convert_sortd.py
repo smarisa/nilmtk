@@ -11,20 +11,15 @@ import numpy as np
 import yaml
 import glob
 
+def convert_sortd(input_path, output_filename, format='HDF'):
+    """Converts the dataset to NILMTK HDF5 format.
 
-ONE_SEC_COLUMNS = [('power', 'active'), ('power', 'apparent'), ('voltage', '')]
-TZ = 'Europe/Helsinki'
-
-
-def convert_fortum(input_path, output_filename, format='HDF'):
-    """Converts the Fortum dataset to NILMTK HDF5 format.
-
-    For more information about the Fortum dataset, contact Samuel Marisa.
+    For more information about the SOR test dataset, contact Samuel Marisa.
 
     Parameters
     ----------
     input_path : str
-        The root path of the Fortum dataset.  It is assumed that the YAML
+        The root path of the dataset.  It is assumed that the YAML
         metadata is in 'input_path/metadata'.
     output_filename : str
         The destination filename (including path and suffix).
@@ -33,11 +28,14 @@ def convert_fortum(input_path, output_filename, format='HDF'):
 
     Example usage:
     --------------
-    convert('/fortum/db', 'store.h5')
+    convert('/sortd', 'store.h5')
     """
-    print('Attempting to convert Fortum dataset at %s into %s in NILMTK %s format...' % (input_path, output_filename, format))
+    print('Attempting to convert the SORTD dataset at %s into %s in NILMTK %s format...' % (input_path, output_filename, format))
     # Ensure that the input directory exists
     check_directory_exists(input_path)
+    # Load the dataset metadata
+    with open(join(input_path, 'metadata/dataset.yaml'), 'r') as stream:
+      dataset_metadata = yaml.load(stream)
     # Open the datastore
     store = get_datastore(output_filename, format, mode='w')
     # Iterate through all building metadata files found in the dataset
@@ -55,7 +53,7 @@ def convert_fortum(input_path, output_filename, format='HDF'):
         df = pd.read_csv(join(input_path, meter_data['data_location']), sep=',', names=columns, dtype={m: np.float32 for m in columns})
         # Convert the timestamp index column to timezone-aware datetime
         df.index = pd.to_datetime(df.index.values, unit='s', utc=True)
-        df = df.tz_convert(TZ)
+        df = df.tz_convert(dataset_metadata['timezone'])
         #df = pd.read_csv(join(input_path, db_file), sep=';', names=('Datetime', 'P1', 'P2', 'P3'), dtype={'P1': np.float64, 'P2': np.float64, 'P3': np.float64}, parse_dates=[1])
         print(df.info())
         print(df.head())
@@ -67,4 +65,4 @@ def convert_fortum(input_path, output_filename, format='HDF'):
     save_yaml_to_datastore(join(input_path, 'metadata'), store)
     print("Closing the store...")
     store.close()
-    print("Done converting Fortum dataset to HDF5!")
+    print("Done converting SORTD dataset to HDF5!")

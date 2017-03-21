@@ -26,7 +26,7 @@ class TimeFrameGroup(list):
         height -= gap * 2
         for timeframe in self:
             length = timeframe.timedelta.total_seconds() / SECS_PER_DAY
-            bottom_left_corner = (timeframe.start, y + gap)
+            bottom_left_corner = (timeframe.start.value // 10 ** 9 / SECS_PER_DAY, y + gap)
             rect = plt.Rectangle(bottom_left_corner, length, height,
                                  color=color, **kwargs)
             ax.add_patch(rect)

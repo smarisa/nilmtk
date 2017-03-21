@@ -17,7 +17,7 @@ class GoodSectionsResults(Results):
         `end` is end date for the whole chunk
         `sections` is a TimeFrameGroups object (a list of nilmtk.TimeFrame objects)
     """
-    
+
     name = "good_sections"
 
     def __init__(self, max_sample_period):
@@ -37,7 +37,7 @@ class GoodSectionsResults(Results):
 
     def combined(self):
         """Merges together any good sections which span multiple segments,
-        as long as those segments are adjacent 
+        as long as those segments are adjacent
         (previous.end - max_sample_period <= next.start <= previous.end).
 
         Returns
@@ -75,7 +75,7 @@ class GoodSectionsResults(Results):
                             row_sections[0].start = index
                         except ValueError:
                             pass
-                
+
             end_date_of_prev_row = row['end']
             sections.extend(row_sections)
 
@@ -95,14 +95,14 @@ class GoodSectionsResults(Results):
 
     def to_dict(self):
         good_sections = self.combined()
-        good_sections_list_of_dicts = [timeframe.to_dict() 
+        good_sections_list_of_dicts = [timeframe.to_dict()
                                        for timeframe in good_sections]
         return {'statistics': {'good_sections': good_sections_list_of_dicts}}
 
     def plot(self, **kwargs):
         timeframes = self.combined()
         return timeframes.plot(**kwargs)
-        
+
     def import_from_cache(self, cached_stat, sections):
         # we (deliberately) use duplicate indices to cache GoodSectionResults
         grouped_by_index = cached_stat.groupby(level=0)
@@ -115,8 +115,19 @@ class GoodSectionsResults(Results):
                 if timeframe in sections:
                     timeframes = []
                     for _, row in sections_df.iterrows():
-                        section_start = tz_localize_naive(row['section_start'], tz)
-                        section_end = tz_localize_naive(row['section_end'], tz)
+                        #~ print('Computing sections...')
+                        #~ print('\n=== type(row)\n%s\n' % (type(row)))
+                        #~ print('\n=== row\n%s\n' % (row))
+                        #~ print('\n=== dir(row)\n%s\n' % (dir(row)))
+                        #~ print('\n=== row.__dict__\n%s\n' % (row.__dict__))
+                        #~ print('\n=== row.index\n%s\n' % (row.index))
+                        #~ print('\n=== row.index.__dict__\n%s\n' % (row.index.__dict__))
+                        #~ print('\n=== dir(row.index)\n%s\n' % (dir(row.index)))
+                        #~ print('\n=== row.index[2]\n%s\n' % (row.index[2]))
+                        #~ print('\n=== row.iloc[1]\n%s\n' % (row.iloc[1]))
+                        #~ print('\n=== row.iloc[2]\n%s\n' % (row.iloc[2]))
+                        section_start = tz_localize_naive(row.iloc[2], tz) # row['section_start']
+                        section_end = tz_localize_naive(row.iloc[1], tz) # row['section_end']
                         timeframes.append(TimeFrame(section_start, section_end))
                     self.append(timeframe, {'sections': [timeframes]})
 
@@ -129,7 +140,7 @@ class GoodSectionsResults(Results):
             we store one TimeFrame per row.  This is because pd.HDFStore cannot
             save a DataFrame where one column is a list if using 'table' format'.
             We also need to strip the timezone information from the data columns.
-            When we import from cache, we assume the timezone for the data 
+            When we import from cache, we assume the timezone for the data
             columns is the same as the tz for the index.
         """
         index_for_cache = []
@@ -138,7 +149,7 @@ class GoodSectionsResults(Results):
             for section in row['sections']:
                 index_for_cache.append(index)
                 data_for_cache.append(
-                    {'end': row['end'], 
+                    {'end': row['end'],
                      'section_start': convert_none_to_nat(section.start),
                      'section_end': convert_none_to_nat(section.end)})
         df = pd.DataFrame(data_for_cache, index=index_for_cache)

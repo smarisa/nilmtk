@@ -36,16 +36,16 @@ def convert_eco(dataset_loc, hdf_filename, timezone):
     dataset_loc: str
         The root directory where the dataset is located.
     hdf_filename: str
-        The location where the hdf_filename is present. 
-        The directory location has to contain the 
+        The location where the hdf_filename is present.
+        The directory location has to contain the
         hdf5file name for the converter to work.
     timezone: str
         specifies the timezone of the dataset.
     """
 
     # Creating a new HDF File
-    store = pd.HDFStore(hdf_filename, 'w', complevel=9, complib='blosc')    
-    
+    store = pd.HDFStore(hdf_filename, 'w', complevel=9, complib='blosc')
+
     check_directory_exists(dataset_loc)
     directory_list = [i for i in listdir(dataset_loc) if '.txt' not in i]
     directory_list.sort()
@@ -68,16 +68,16 @@ def convert_eco(dataset_loc, hdf_filename, timezone):
         print('Current dir list:', dir_list)
 
         for fl in dir_list:
-            
+
             print('Computing for folder ', fl)
-            
+
             fl_dir_list = [i for i in listdir(join(dataset_loc,folder,fl)) if '.csv' in i]
             fl_dir_list.sort()
 
             if meter_flag == 'sm':
                 for fi in fl_dir_list:
                     df = pd.read_csv(join(dataset_loc,folder,fl,fi), names=[i for i in range(1,17)], dtype=np.float32)
-                    
+
                     for phase in range(1,4):
                         key = str(Key(building=building_no, meter=phase))
                         df_phase = df.ix[:,[1+phase, 5+phase, 8+phase, 13+phase]]
@@ -86,24 +86,24 @@ def convert_eco(dataset_loc, hdf_filename, timezone):
                         power = df_phase.as_matrix([1+phase, 13+phase])
                         reactive = power[:,0] * np.tan(power[:,1] * np.pi / 180)
                         df_phase['Q'] = reactive
-                        
+
                         df_phase.index = pd.DatetimeIndex(start=fi[:-4], freq='s', periods=86400, tz='GMT')
                         df_phase = df_phase.tz_convert(timezone)
-                        
+
                         sm_column_name = {1+phase:('power', 'active'),
                                             5+phase:('current', ''),
                                             8+phase:('voltage', ''),
-                                            13+phase:('phase_angle', ''),
+                                            13+phase:('phase angle', ''),
                                             'Q': ('power', 'reactive'),
                                             };
                         df_phase.rename(columns=sm_column_name, inplace=True)
-                        
+
                         tmp_before = np.size(df_phase.power.active)
                         df_phase = df_phase[df_phase.power.active != -1]
                         tmp_after = np.size(df_phase.power.active)
                         if (tmp_before != tmp_after):
                             print('Removed missing measurements - Size before: ' + str(tmp_before) + ', size after: ' + str(tmp_after))
-                        
+
                         df_phase.columns.set_names(LEVEL_NAMES, inplace=True)
                         if not key in store:
                             store.put(key, df_phase, format='Table')
@@ -112,13 +112,13 @@ def convert_eco(dataset_loc, hdf_filename, timezone):
                             store.flush()
                         print('Building', building_no, ', Meter no.', phase,
                               '=> Done for ', fi[:-4])
-                
+
             else:
                 #Meter number to be used in key
                 meter_num = int(fl) + 3
-                
+
                 key = str(Key(building=building_no, meter=meter_num))
-                
+
                 #Getting dataframe for each csv file seperately
                 for fi in fl_dir_list:
                     df = pd.read_csv(join(dataset_loc,folder,fl ,fi), names=[1], dtype=np.float64)
@@ -132,7 +132,7 @@ def convert_eco(dataset_loc, hdf_filename, timezone):
                     tmp_after = np.size(df.power.active)
                     if (tmp_before != tmp_after):
                         print('Removed missing measurements - Size before: ' + str(tmp_before) + ', size after: ' + str(tmp_after))
-                    
+
                     # If table not present in hdf5, create or else append to existing data
                     if not key in store:
                         store.put(key, df, format='Table')
@@ -141,7 +141,7 @@ def convert_eco(dataset_loc, hdf_filename, timezone):
                         store.append(key, df, format='Table')
                         store.flush()
                         print('Building',building_no,', Meter no.',meter_num,'=> Done for ',fi[:-4])
-            
+
     print("Data storage completed.")
     store.close()
 

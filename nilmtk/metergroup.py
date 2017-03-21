@@ -1,5 +1,6 @@
 from __future__ import print_function, division
 import networkx as nx
+from networkx.drawing.nx_agraph import graphviz_layout
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -587,7 +588,7 @@ class MeterGroup(Electric):
     def draw_wiring_graph(self, show_meter_labels=True):
         graph = self.wiring_graph()
         meter_labels = {meter: meter.instance() for meter in graph.nodes()}
-        pos = nx.graphviz_layout(graph, prog='dot')
+        pos = graphviz_layout(graph, prog='dot')
         nx.draw(graph, pos, labels=meter_labels, arrows=False)
         if show_meter_labels:
             meter_labels = {meter: meter.label() for meter in graph.nodes()}
@@ -1387,7 +1388,7 @@ class MeterGroup(Electric):
     def _plot_sankey(self):
         graph = self.wiring_graph()
         meter_labels = {meter: meter.instance() for meter in graph.nodes()}
-        pos = nx.graphviz_layout(graph, prog='dot')
+        pos = graphviz_layout(graph, prog='dot')
         #nx.draw(graph, pos, labels=meter_labels, arrows=False)
         meter_labels = {meter: meter.label() for meter in graph.nodes()}
         for meter, name in iteritems(meter_labels):

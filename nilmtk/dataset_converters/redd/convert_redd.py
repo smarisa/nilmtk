@@ -86,9 +86,9 @@ def _convert(input_path, store, measurement_mapping_func, tz, sort_index=True):
             measurements = measurement_mapping_func(house_id, chan_id)
             csv_filename = _get_csv_filename(input_path, key)
             df = _load_csv(csv_filename, measurements, tz)
-
             if sort_index:
                 df = df.sort_index() # raw REDD data isn't always sorted
+            print(df)
             store.put(str(key), df)
         print()
 
