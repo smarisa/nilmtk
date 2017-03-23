@@ -1,0 +1,19 @@
+name: SORTD
+long_name: The SOR Test Dataset of Generated Data
+creators:
+- Marisa, Samuel
+publication_date: 2017
+institution: Aalto University
+contact: samuel.marisa@aalto.fi
+description: Some fake power data for testing.
+subject: Aggregated power demand from fake buildings.
+number_of_buildings: 1
+timezone: Europe/Helsinki
+geo_location:
+  locality: Finland
+  country: FI
+  latitude: 60.170833
+  longitude: 24.9375
+related_documents:
+- foobar
+schema: https://github.com/nilmtk/nilm_metadata/tree/v0.2

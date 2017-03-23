@@ -54,11 +54,14 @@ for bkey in dataset.buildings:
   print('\n\n%s\n==== ELEC for B%s\n' % ('='*80, bkey))
   print('\n== elec')
   print(type(elec), elec)
-  print('\n== elec.plot_good_sections()')
-  ax = elec.plot_good_sections()
-  plt.savefig(dataset_name + '__plot_good_sections.png'); plt.clf()
-  #for meter in elec:
-  #  print(meter)
+  #print('\n== elec.plot_good_sections()')
+  #ax = elec.plot_good_sections()
+  #plt.savefig(dataset_name + '__plot_good_sections.png'); plt.clf()
+  print('\n== elec.plot_power_histogram()')
+  ax = elec.plot_power_histogram()
+  plt.savefig(dataset_name + '__plot_power_histogram.png'); plt.clf()
+  for meter in elec:
+    print(meter)
   #print('== elec.draw_wiring_graph()')
   #print(elec.draw_wiring_graph())
 
