@@ -33,7 +33,7 @@ from .datastore import MAX_MEM_ALLOWANCE_IN_BYTES
 from nilmtk.timeframegroup import TimeFrameGroup
 
 # MeterGroupID.meters is a tuple of ElecMeterIDs.  Order doesn't matter.
-# (we can't use a set because sets aren't hashable so we can't use 
+# (we can't use a set because sets aren't hashable so we can't use
 # a set as a dict key or a DataFrame column name.)
 MeterGroupID = namedtuple('MeterGroupID', ['meters'])
 
@@ -120,8 +120,8 @@ class MeterGroup(Electric):
                 self.meters.append(metergroup)
 
         # disable disabled meters
-        meters_to_disable = [m for m in self.meters 
-                             if isinstance(m, ElecMeter) 
+        meters_to_disable = [m for m in self.meters
+                             if isinstance(m, ElecMeter)
                              and m.metadata.get('disabled')]
         for meter in meters_to_disable:
             self.meters.remove(meter)
@@ -168,7 +168,7 @@ class MeterGroup(Electric):
         These formats for `key` are accepted:
 
         Retrieve a meter using details of the meter:
-        * `1` - retrieves meter instance 1, raises Exception if there are 
+        * `1` - retrieves meter instance 1, raises Exception if there are
                 more than one meter with this instance, raises KeyError
                 if none are found.  If meter instance 1 is in a nested MeterGroup
                 then retrieve the ElecMeter, not the MeterGroup.
@@ -179,7 +179,7 @@ class MeterGroup(Electric):
           existing nested MeterGroup containing exactly meter instances 1 and 2.
         * `ElecMeterID(0, 1, 'REDD')` - instance `0` means `mains`. This returns
            a new MeterGroup of all site_meters in building 1 in REDD.
-        * `ElecMeterID((1,2), 1, 'REDD')` - retrieve existing MeterGroup 
+        * `ElecMeterID((1,2), 1, 'REDD')` - retrieve existing MeterGroup
            which contains exactly meters 1 & 2.
         * `(1, 2, 'REDD')` - converts to ElecMeterID and treats as an ElecMeterID.
            Items must be in the order expected for an ElecMeterID.
@@ -194,7 +194,7 @@ class MeterGroup(Electric):
         -------
         ElecMeter or MeterGroup
         """
-
+        #print('>>> MeterGroup.__getitem__(self, key=(%s, %s))...' % (type(key), str(key)))
         if isinstance(key, str):
             # default to get first meter
             return self[(key, 1)]
@@ -285,7 +285,7 @@ class MeterGroup(Electric):
             else:
                 return meters_found[0]
         else:
-            raise TypeError()
+            raise TypeError('MeterGroup.__getitem__(self, key=%s) failed!' % (key))
 
     def matches(self, key):
         for meter in self.meters:
@@ -338,7 +338,7 @@ class MeterGroup(Electric):
           is in the query string before running `eval`)
 
         * or numexpr: https://github.com/pydata/numexpr
-        * see Pandas.eval(): 
+        * see Pandas.eval():
           * http://pandas.pydata.org/pandas-docs/stable/indexing.html#the-query-method-experimental
           * https://github.com/pydata/pandas/blob/master/pandas/computation/eval.py#L119
         """
@@ -377,7 +377,7 @@ class MeterGroup(Electric):
     def select_using_appliances(self, **kwargs):
         """Select a group of meters based on appliance metadata.
 
-        e.g. 
+        e.g.
         * select_using_appliances(category='lighting')
         * select_using_appliances(type='fridge')
         * select_using_appliances(type=['fridge', 'kettle', 'toaster'])
@@ -430,7 +430,7 @@ class MeterGroup(Electric):
 
     @classmethod
     def from_other_metergroup(cls, other, dataset):
-        """Assemble a new meter group using the same meter IDs and nested 
+        """Assemble a new meter group using the same meter IDs and nested
         MeterGroups as `other`.  This is useful for preparing a ground truth
         metergroup from a meter group of NILM predictions.
 
@@ -482,14 +482,14 @@ class MeterGroup(Electric):
             appliances.add(meter.dominant_appliance())
         return list(appliances)
 
-    def values_for_appliance_metadata_key(self, key, 
+    def values_for_appliance_metadata_key(self, key,
                                           only_consider_dominant_appliance=True):
         """
         Parameters
         ----------
         key : str
             e.g. 'type' or 'categories' or 'room'
-        
+
         Returns
         -------
         list
@@ -544,7 +544,7 @@ class MeterGroup(Electric):
         return simplest_type_for(buildings)
 
     def contains_meters_from_multiple_buildings(self):
-        """Returns True if this MeterGroup contains meters from 
+        """Returns True if this MeterGroup contains meters from
         more than one building."""
         building = self.building()
         try:
@@ -605,11 +605,11 @@ class MeterGroup(Electric):
     def load(self, **kwargs):
         """Returns a generator of DataFrames loaded from the DataStore.
 
-        By default, `load` will load all available columns from the DataStore.  
+        By default, `load` will load all available columns from the DataStore.
         Specific columns can be selected in one or two mutually exclusive ways:
 
         1. specify a list of column names using the `cols` parameter.
-        2. specify a `physical_quantity` and/or an `ac_type` parameter to ask 
+        2. specify a `physical_quantity` and/or an `ac_type` parameter to ask
            `load` to automatically select columns.
 
         Each meter in the MeterGroup will first be resampled before being added.
@@ -621,28 +621,28 @@ class MeterGroup(Electric):
         sample_period : int or float, optional
             Number of seconds to use as sample period when reindexing meters.
             If not specified then will use the max of all meters' sample_periods.
-        resample_kwargs : dict of key word arguments (other than 'rule') to 
+        resample_kwargs : dict of key word arguments (other than 'rule') to
             `pass to pd.DataFrame.resample()`
         chunksize : int, optional
-            the maximum number of rows per chunk. Note that each chunk is 
+            the maximum number of rows per chunk. Note that each chunk is
             guaranteed to be of length <= chunksize.  Each chunk is *not*
             guaranteed to be exactly of length == chunksize.
-        **kwargs : 
+        **kwargs :
             any other key word arguments to pass to `self.store.load()` including:
         physical_quantity : string or list of strings
             e.g. 'power' or 'voltage' or 'energy' or ['power', 'energy'].
             If a single string then load columns only for that physical quantity.
-            If a list of strings then load columns for all those physical 
+            If a list of strings then load columns for all those physical
             quantities.
         ac_type : string or list of strings, defaults to None
-            Where 'ac_type' is short for 'alternating current type'.  e.g. 
+            Where 'ac_type' is short for 'alternating current type'.  e.g.
             'reactive' or 'active' or 'apparent'.
             If set to None then will load all AC types per physical quantity.
-            If set to 'best' then load the single best AC type per 
+            If set to 'best' then load the single best AC type per
             physical quantity.
-            If set to a single AC type then load just that single AC type per 
+            If set to a single AC type then load just that single AC type per
             physical quantity, else raise an Exception.
-            If set to a list of AC type strings then will load all those 
+            If set to a list of AC type strings then will load all those
             AC types and will raise an Exception if any cannot be found.
         cols : list of tuples, using NILMTK's vocabulary for measurements.
             e.g. [('power', 'active'), ('voltage', ''), ('energy', 'reactive')]
@@ -652,7 +652,7 @@ class MeterGroup(Electric):
 
         Returns
         ---------
-        Always return a generator of DataFrames (even if it only has a single 
+        Always return a generator of DataFrames (even if it only has a single
         column).
 
         .. note:: Different AC types will be treated separately.
@@ -715,11 +715,11 @@ class MeterGroup(Electric):
         """
         Parameters
         ----------
-        threshold : number, threshold in Watts 
+        threshold : number, threshold in Watts
 
         Returns
         -------
-        sim_switches : pd.Series of type {timestamp: number of 
+        sim_switches : pd.Series of type {timestamp: number of
         simultaneous switches}
 
         Notes
@@ -917,7 +917,7 @@ class MeterGroup(Electric):
             If not specified then will use the max of all meters' sample_periods.
         resample : bool, defaults to True
             If True then resample to `sample_period`.
-        **kwargs : 
+        **kwargs :
             any other key word arguments to pass to `self.store.load()` including:
         ac_type : string, defaults to 'best'
         physical_quantity: string, defaults to 'power'
@@ -998,7 +998,7 @@ class MeterGroup(Electric):
 
         Returns
         -------
-        pd.DataFrame of the result of `method` called on each 
+        pd.DataFrame of the result of `method` called on each
         pair in `self.meters`.
         """
         meter_identifiers = list(self.identifier.meters)
@@ -1015,7 +1015,7 @@ class MeterGroup(Electric):
 
     def pairwise_mutual_information(self):
         """
-        Finds the pairwise mutual information among different 
+        Finds the pairwise mutual information among different
         meters in a MeterGroup.
 
         Returns
@@ -1027,7 +1027,7 @@ class MeterGroup(Electric):
 
     def pairwise_correlation(self):
         """
-        Finds the pairwise correlation among different 
+        Finds the pairwise correlation among different
         meters in a MeterGroup.
 
         Returns
@@ -1057,13 +1057,13 @@ class MeterGroup(Electric):
                 all_nan = False
             if verbose:
                 print("   {:.2%}".format(prop))
-        
+
         if all_nan:
             proportion = np.NaN
         return proportion
 
     def available_ac_types(self, physical_quantity):
-        """Returns set of all available alternating current types for a 
+        """Returns set of all available alternating current types for a
         specific physical quantity.
 
         Parameters
@@ -1088,19 +1088,19 @@ class MeterGroup(Electric):
                                for meter in self.meters]
         return list(set(flatten_2d_list(all_physical_quants)))
 
-    def energy_per_meter(self, per_period=None, mains=None, 
+    def energy_per_meter(self, per_period=None, mains=None,
                          use_meter_labels=False, **load_kwargs):
-        """Returns pd.DataFrame where columns is meter.identifier and 
+        """Returns pd.DataFrame where columns is meter.identifier and
         each value is total energy.  Index is AC types.
 
-        Does not care about wiring hierarchy.  Does not attempt to ensure all 
+        Does not care about wiring hierarchy.  Does not attempt to ensure all
         channels share the same time sections.
 
         Parameters
         ----------
         per_period : None or offset alias
             If None then returns absolute energy used per meter.
-            If a Pandas offset alias (e.g. 'D' for 'daily') then 
+            If a Pandas offset alias (e.g. 'D' for 'daily') then
             will return the average energy per period.
         ac_type : None or str
             e.g. 'active' or 'best'.  Defaults to 'best'.
@@ -1174,7 +1174,7 @@ class MeterGroup(Electric):
     def fraction_per_meter(self, **load_kwargs):
         """Fraction of energy per meter.
 
-        Return pd.Series.  Index is meter.instance.  
+        Return pd.Series.  Index is meter.instance.
         Each value is a float in the range [0,1].
         """
         energy_per_meter = self.energy_per_meter(**load_kwargs).max()
@@ -1289,7 +1289,7 @@ class MeterGroup(Electric):
             By default top_k is in descending order. To select top_k
             by ascending order, use asc=True
         group_remainder : bool, optional, defaults to False
-            If True then place all remaining meters into a 
+            If True then place all remaining meters into a
             nested metergroup.
         **kwargs : key word arguments to pass to load()
 
@@ -1433,7 +1433,7 @@ class MeterGroup(Electric):
 
         if threshold is not None:
             df[df <= threshold] = 0
-            
+
         if unit == 'kW':
             df /= 1000
 
@@ -1461,7 +1461,7 @@ class MeterGroup(Electric):
         plt.ylim((-0.5, len(self.meters)+0.5))
         return ax
 
-    def plot_good_sections(self, ax=None, label_func='instance', 
+    def plot_good_sections(self, ax=None, label_func='instance',
                            include_disabled_meters=True, load_kwargs=None,
                            **plot_kwargs):
         """
@@ -1534,7 +1534,7 @@ class MeterGroup(Electric):
         ax = pd.DataFrame(energy).T.plot(kind='bar', stacked=True, grid=True,
                                          edgecolor="none", legend=False, width=2)
         ax.set_xticks([])
-        ax.set_ylabel('kWh\nper\nday', rotation=0, ha='center', va='center', 
+        ax.set_ylabel('kWh\nper\nday', rotation=0, ha='center', va='center',
                       labelpad=15)
 
         cumsum = energy.cumsum()
@@ -1542,12 +1542,12 @@ class MeterGroup(Electric):
         for kwh, (label, y) in zip(energy.values, iteritems(text_ys)):
             label += " ({:.2f})".format(kwh)
             ax.annotate(label, (0, y), color='white', size=8,
-                        horizontalalignment='center', 
+                        horizontalalignment='center',
                         verticalalignment='center')
 
         return ax
 
-    def plot_multiple(self, axes, meter_keys, plot_func, 
+    def plot_multiple(self, axes, meter_keys, plot_func,
                       kwargs_per_meter=None, pretty_label=True, **kwargs):
         """Create multiple subplots.
 
@@ -1555,8 +1555,8 @@ class MeterGroup(Electric):
         -----------
         axes : list of matplotlib axes objects.
             e.g. created using `fix, axes = plt.subplots()`
-        meter_keys : list of keys for identifying ElecMeters or MeterGroups. 
-            e.g. ['fridge', 'kettle', 4, MeterGroupID, ElecMeterID].  
+        meter_keys : list of keys for identifying ElecMeters or MeterGroups.
+            e.g. ['fridge', 'kettle', 4, MeterGroupID, ElecMeterID].
             Each element is anything that MeterGroup.__getitem__() accepts.
         plot_func : string
             Name of function from ElecMeter or Electric or MeterGroup
@@ -1565,7 +1565,7 @@ class MeterGroup(Electric):
             Provide key word arguments for the plot_func for each meter.
             each key is a parameter name for plot_func
             each value is a list (same length as `meters`) for specifying a value for
-            this parameter for each meter. 
+            this parameter for each meter.
             e.g. {'range': [(0,100), (0,200)]}
         pretty_label : bool
         **kwargs : any key word arguments to pass the same values to the
@@ -1613,7 +1613,7 @@ class MeterGroup(Electric):
         """Clear cache on all meters in this MeterGroup."""
         for meter in self.meters:
             meter.clear_cache()
-        
+
     def correlation_of_sum_of_submeters_with_mains(self, **load_kwargs):
         print("Running MeterGroup.correlation_of_sum_of_submeters_with_mains...")
         submeters = self.meters_directly_downstream_of_mains()
@@ -1641,8 +1641,8 @@ class MeterGroup(Electric):
             dropout_rates = np.array(dropout_rates)
             series['dropout_rates_ignoring_gaps'] = (
                 "min={}, mean={}, max={}".format(
-                    dropout_rates.min(), 
-                    dropout_rates.mean(), 
+                    dropout_rates.min(),
+                    dropout_rates.mean(),
                     dropout_rates.max()))
 
         series['mains_sample_period'] = self.mains().sample_period()
@@ -1713,9 +1713,9 @@ def combine_chunks_from_generators(index, columns, meters, kwargs):
     """
     # Regarding columns (e.g. voltage) that we need to average:
     # The approach is that we first add everything together
-    # in the first for-loop, whilst also keeping a 
+    # in the first for-loop, whilst also keeping a
     # `columns_to_average_counter` DataFrame
-    # which tells us what to divide by in order to compute the 
+    # which tells us what to divide by in order to compute the
     # mean for PHYSICAL_QUANTITIES_TO_AVERAGE.
 
     # Regarding doing an in-place addition:
@@ -1763,7 +1763,7 @@ def combine_chunks_from_generators(index, columns, meters, kwargs):
             del column
             cumulator_col = cumulator_arr[:,i]
             where_both_are_nan = np.isnan(cumulator_col) & np.isnan(aligned)
-            np.nansum([cumulator_col, aligned], axis=0, out=cumulator_col, 
+            np.nansum([cumulator_col, aligned], axis=0, out=cumulator_col,
                       dtype=DTYPE)
             cumulator_col[where_both_are_nan] = np.NaN
             del aligned
@@ -1776,7 +1776,7 @@ def combine_chunks_from_generators(index, columns, meters, kwargs):
         columns_to_average = (set(PHYSICAL_QUANTITIES_TO_AVERAGE)
                               .intersection(physical_quantities))
         if columns_to_average:
-            counter_increment = pd.DataFrame(1, columns=columns_to_average, 
+            counter_increment = pd.DataFrame(1, columns=columns_to_average,
                                              dtype=np.uint16,
                                              index=chunk_from_next_meter.index)
             columns_to_average_counter = columns_to_average_counter.add(

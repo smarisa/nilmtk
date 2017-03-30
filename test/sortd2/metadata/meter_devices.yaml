@@ -1,0 +1,14 @@
+FakeMeter:
+  model: Unknown
+  manufacturer: Unknown
+  manufacturer_url: http://unknown.com
+  sample_period: 10
+  max_sample_period: 30
+  measurements:
+  - physical_quantity: power
+    type: active
+    upper_limit: 10000
+    lower_limit: 0
+  wireless: false
+  description: >
+    A fake power meter that measures effective active power at a 10 Hz interval.
