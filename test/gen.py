@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 """
-gen.py -- Fake disaggregation data generation tool.
+gen.py -- Synthetic data generation tool for disaggregation research.
 
 Usage: gen.py METADATA_DIR
 
-Generates fake data for the buildings according to the metadata specified at the
-given metadata dir.
+Generates synthetic data for the buildings according to the metadata specified
+at the given metadata dir. The metadata must be compliant with the NILM Metadata
+scheme: https://github.com/nilmtk/nilm_metadata/tree/v0.2
 """
 # Standard
 import sys
@@ -83,7 +84,7 @@ except:
   sys.exit(1)
 
 # Measurement interval, Hz
-FREQ = dmm['FakeMeter']['sample_period']
+FREQ = dmm['VirtualMeter']['sample_period']
 TDIV = pytd(seconds=FREQ)
 
 for pfm in vpfmb:
@@ -100,7 +101,7 @@ for pfm in vpfmb:
     for sm in da['meters']:
       DE[sm].vsa.append(da['type'])
   for em in DE.values():
-    print('Generating fake data for meter %s with error rate %.3f...' % (em.key, error_rate))
+    print('Generating synthetic data for meter %s with error rate %.3f...' % (em.key, error_rate))
     em.gen(error_rate)
   for em in DE.values():
     print('Writing the data for meter %s...' % (em.key))

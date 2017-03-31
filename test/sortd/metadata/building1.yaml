@@ -5,23 +5,23 @@ timeframe: {start: '2016-03-01T00:00:00+0000', end: '2016-03-03T00:00:00+0000'}
 elec_meters:
   1:
     site_meter: true
-    device_model: FakeMeter
+    device_model: VirtualMeter
     data_location: building1/elec/1.csv
   2:
     submeter_of: 1
-    device_model: FakeMeter
+    device_model: VirtualMeter
     data_location: building1/elec/2.csv
   3:
     submeter_of: 1
-    device_model: FakeMeter
+    device_model: VirtualMeter
     data_location: building1/elec/3.csv
   4:
     submeter_of: 1
-    device_model: FakeMeter
+    device_model: VirtualMeter
     data_location: building1/elec/4.csv
   5:
     submeter_of: 1
-    device_model: FakeMeter
+    device_model: VirtualMeter
     data_location: building1/elec/5.csv
 rooms:
 - {instance: 1, floor: 1, name: testroom, description: master testroom}

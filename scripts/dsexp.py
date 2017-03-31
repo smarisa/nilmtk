@@ -30,6 +30,8 @@ datastore_file_str = str(datastore_file)
 if not datastore_file.exists():
   if dataset_name == 'sortd':
     ntkdsc.convert_sortd(dataset_directory_str, datastore_file_str)
+  elif dataset_name == 'sortd2':
+    ntkdsc.convert_sortd(dataset_directory_str, datastore_file_str)
   elif dataset_name == 'fortum':
     ntkdsc.convert_fortum(dataset_directory_str, datastore_file_str)
   elif dataset_name == 'eco':
@@ -73,10 +75,10 @@ for bkey in dataset.buildings:
   # RuntimeError: Tree has more than one root!
   #print('\n== elec.plot_good_sections()')
   #ax = elec.plot_good_sections()
-  #plt.savefig(dataset_name + '__plot_good_sections.png'); plt.clf()
+  #plt.savefig('results/%s__plot_good_sections.png' % (dataset_name)); plt.clf()
   #print('\n== elec.plot_power_histogram()')
   #ax = elec.plot_power_histogram()
-  #plt.savefig(dataset_name + '__plot_power_histogram.png'); plt.clf()
+  #plt.savefig('results/%s__plot_power_histogram.png' % (dataset_name)); plt.clf()
   # --> ValueError: 'physical_quantity' is not in list
   #print('\n== elec.draw_wiring_graph()')
   #print('\n== elec.draw_wiring_graph()')
@@ -97,7 +99,7 @@ for bkey in dataset.buildings:
   #print('\n== elec.plot()')
   # Plots the submeters with respect to power and time.
   #ax = elec.plot()
-  #plt.savefig(dataset_name + '__elec_plot.png'); plt.clf()
+  #plt.savefig('results/%s__elec_plot.png' % (dataset_name)); plt.clf()
   #print('\n== elec.activity_histogram()')
   # ?? Daily appliance usage histograms.
   #print(elec.activity_histogram())
