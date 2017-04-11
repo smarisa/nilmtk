@@ -15,8 +15,8 @@ from nilm_metadata import convert_yaml_to_hdf5, save_yaml_to_datastore
 
 """
 TODO:
-* The bottleneck appears to be CPU.  So could be sped up by using 
-  multiprocessing module to use multiple CPU cores to load REDD channels in 
+* The bottleneck appears to be CPU.  So could be sped up by using
+  multiprocessing module to use multiple CPU cores to load REDD channels in
   parallel.
 """
 
@@ -36,23 +36,17 @@ def convert_redd(redd_path, output_filename, format='HDF'):
     def _redd_measurement_mapping_func(house_id, chan_id):
         ac_type = 'apparent' if chan_id <= 2 else 'active'
         return [('power', ac_type)]
-        
+
     # Open DataStore
     store = get_datastore(output_filename, format, mode='w')
 
     # Convert raw data to DataStore
     _convert(redd_path, store, _redd_measurement_mapping_func, 'US/Eastern')
 
-    s=join(get_module_directory(),
+    # Add metadata
+    save_yaml_to_datastore(join(get_module_directory(),
                               'dataset_converters',
                               'redd',
-                              'metadata')
-
-
-    # Add metadata
-    save_yaml_to_datastore(join(get_module_directory(), 
-                              'dataset_converters', 
-                              'redd', 
                               'metadata'),
                          store)
     store.close()
@@ -72,7 +66,7 @@ def _convert(input_path, store, measurement_mapping_func, tz, sort_index=True):
             - house_id
             - chan_id
         Function should return a list of tuples e.g. [('power', 'active')]
-    tz : str 
+    tz : str
         Timezone e.g. 'US/Eastern'
     sort_index : bool
     """
@@ -154,7 +148,7 @@ def _get_csv_filename(input_path, key_obj):
     key_obj : (nilmtk.Key) the house and channel to load
 
     Returns
-    ------- 
+    -------
     filename : str
     """
     assert isinstance(input_path, str)
@@ -188,11 +182,11 @@ def _load_csv(filename, columns, tz):
     # Load data
     df = pd.read_csv(filename, sep=' ', names=columns,
                      dtype={m:np.float32 for m in columns})
-    
+
     # Modify the column labels to reflect the power measurements recorded.
     df.columns.set_names(LEVEL_NAMES, inplace=True)
 
-    # Convert the integer index column to timezone-aware datetime 
+    # Convert the integer index column to timezone-aware datetime
     df.index = pd.to_datetime(df.index.values, unit='s', utc=True)
     df = df.tz_convert(tz)
 
