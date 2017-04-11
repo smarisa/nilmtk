@@ -249,7 +249,10 @@ class CombinatorialOptimisation(Disaggregator):
             predicted_power = state_combinations[
                 indices_of_state_combinations, i].flatten()
             column = pd.Series(predicted_power, index=mains.index, name=i)
-            appliance_powers_dict[self.model[i]['training_metadata']] = column
+            # FIXME, in the upstream repo, the line was
+            # appliance_powers_dict[self.model[i]['training_metadata']] = column
+            # but this seems to work better:
+            appliance_powers_dict[i] = column
         appliance_powers = pd.DataFrame(appliance_powers_dict, dtype='float32')
         return appliance_powers
 
