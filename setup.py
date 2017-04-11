@@ -55,8 +55,8 @@ Following Segment of this file was taken from the pandas project(https://github.
 
 MAJOR = 0
 MINOR = 2
-MICRO = 0
-ISRELEASED = False
+MICRO = 1
+ISRELEASED = True
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 QUALIFIER = ''
 
@@ -106,6 +106,7 @@ setup(
     name='nilmtk',
     version=FULLVERSION,
     packages=find_packages(),
+    package_data={'': ['*.yaml']},
     install_requires=[],
     description='Estimate the energy consumed by individual appliances from '
                 'whole-house power meter readings',

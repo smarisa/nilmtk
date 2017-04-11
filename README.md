@@ -17,12 +17,6 @@ disaggregation (i.e. disaggregation where you do not yet have
 submetered training data), although we hope that it might be some time
 in the future**.
 
-Below is an example of sub-metered appliance-level data, which NILM
-algorithms aim to produce. N.B. this is not the output of a NILMTK
-algorithm!
-
-<img src="https://dl.dropboxusercontent.com/u/75845627/nilmtk/submetered.png" alt="Drawing" style="width: 40% height: 40%;"/>
-
 
 # Why a toolkit for NILM?
 
@@ -81,12 +75,4 @@ as a guide to the current API.
 
 For more detail, please see our [changelog](https://github.com/nilmtk/nilmtk/blob/master/docs/manual/development_guide/changelog.md).
 
-
-##### Code health
-
-[![Build Status](https://travis-ci.org/nilmtk/nilmtk.svg?branch=master)](https://travis-ci.org/nilmtk/nilmtk) 
-
-[![Coverage Status](https://coveralls.io/repos/nilmtk/nilmtk/badge.png)](https://coveralls.io/r/nilmtk/nilmtk)
-
-[![Code Health](https://landscape.io/github/nilmtk/nilmtk/master/landscape.png)](https://landscape.io/github/nilmtk/nilmtk/master)
-
+[![Build Status](https://travis-ci.org/nilmtk/nilmtk.svg?branch=master)](https://travis-ci.org/nilmtk/nilmtk)
