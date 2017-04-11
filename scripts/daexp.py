@@ -90,12 +90,17 @@ output = HDFDataStore(str(co_outfile), 'w')
 print('\n== co.disaggregate(dataset.buildings[%d].mains(), output)' % (disag_building))
 co.disaggregate(dataset.buildings[disag_building].elec.mains(), output)
 output.close()
+
 ## FHMM training and disaggregation
+
 ### Training
-#fhmm = fhmm_exact.FHMM()
-#fhmm.train(elec)
+
+fhmm = fhmm_exact.FHMM()
+fhmm.train(elec)
+
 ### Disaggregation
 
+#TODO
 
 ## Exploring disaggregation results
 
