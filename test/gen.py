@@ -3,7 +3,7 @@
 """
 gen.py -- Synthetic data generation tool for disaggregation research.
 
-Usage: gen.py METADATA_DIR
+Usage: gen.py METADATA_DIR ERROR_RATE?
 
 Generates synthetic data for the buildings according to the metadata specified
 at the given metadata dir. The metadata must be compliant with the NILM Metadata

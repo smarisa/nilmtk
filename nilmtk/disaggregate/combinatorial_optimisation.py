@@ -121,7 +121,7 @@ class CombinatorialOptimisation(Disaggregator):
             centroids = [model['states'] for model in self.model]
             self.state_combinations = cartesian(centroids)
 
-    def disaggregate(self, mains, output_datastore,**load_kwargs):
+    def disaggregate(self, mains, output_datastore, **load_kwargs):
         '''Disaggregate mains according to the model learnt previously.
 
         Parameters

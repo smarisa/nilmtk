@@ -28,9 +28,7 @@ datastore_file = dataset_directory / ('%s.h5' % (dataset_name.lower()))
 datastore_file_str = str(datastore_file)
 # If the datastore does not exist (data not converted yet, load it)
 if not datastore_file.exists():
-  if dataset_name == 'sortd':
-    ntkdsc.convert_sortd(dataset_directory_str, datastore_file_str)
-  elif dataset_name == 'sortd2':
+  if dataset_name.startswith('sortd'):
     ntkdsc.convert_sortd(dataset_directory_str, datastore_file_str)
   elif dataset_name == 'fortum':
     ntkdsc.convert_fortum(dataset_directory_str, datastore_file_str)

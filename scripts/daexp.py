@@ -34,9 +34,7 @@ datastore_file = dataset_directory / ('%s.h5' % (dataset_name.lower()))
 datastore_file_str = str(datastore_file)
 # If the datastore does not exist (data not converted yet, load it)
 if not datastore_file.exists():
-  if dataset_name == 'sortd':
-    ntkdsc.convert_sortd(dataset_directory_str, datastore_file_str)
-  elif dataset_name == 'sortd2':
+  if dataset_name.startswith('sortd'):
     ntkdsc.convert_sortd(dataset_directory_str, datastore_file_str)
   elif dataset_name == 'fortum':
     ntkdsc.convert_fortum(dataset_directory_str, datastore_file_str)
@@ -77,6 +75,36 @@ else:
   train_building = 1
   disag_building = 2
 
+## Dummy training and disaggregation
+
+### Training
+dum = DummyDisaggregator()
+print('\n== dum.train(dataset.buildings[%d].elec)' % (train_building))
+dum.train(dataset.buildings[train_building].elec)
+
+### Disaggregation
+dum_outfile = dataset_directory / ('%s-da-co.h5' % (dataset_name.lower()))
+output = HDFDataStore(str(dum_outfile), 'w')
+print('\n== co.disaggregate(dataset.buildings[%d].mains(), output)' % (disag_building))
+dum.disaggregate(dataset.buildings[disag_building].elec.mains(), output)
+output.close()
+
+sys.exit()
+
+## NFHMM training and disaggregation
+
+### Training
+nfhmm = NFHMMDisaggregator()
+print('\n== nfhmm.train(dataset.buildings[%d].elec)' % (train_building))
+nfhmm.train(dataset.buildings[train_building].elec)
+
+### Disaggregation
+nfhmm_outfile = dataset_directory / ('%s-da-co.h5' % (dataset_name.lower()))
+output = HDFDataStore(str(nfhmm_outfile), 'w')
+print('\n== nfhmm.disaggregate(dataset.buildings[%d].mains(), output)' % (disag_building))
+nfhmm.disaggregate(dataset.buildings[disag_building].elec.mains(), output)
+output.close()
+
 ## CO training and disaggregation
 
 ### Training
@@ -95,8 +123,8 @@ output.close()
 
 ### Training
 
-fhmm = fhmm_exact.FHMM()
-fhmm.train(elec)
+#~ fhmm = fhmm_exact.FHMM()
+#~ fhmm.train(dataset.buildings[train_building].elec)
 
 ### Disaggregation
 

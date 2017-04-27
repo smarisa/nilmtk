@@ -11,4 +11,4 @@ VirtualMeter:
     lower_limit: 0
   wireless: false
   description: >
-    A virtual power meter that measures effective active power at a 10 Hz interval.
+    A virtual power meter that measures effective active power at a 1/10 Hz interval.

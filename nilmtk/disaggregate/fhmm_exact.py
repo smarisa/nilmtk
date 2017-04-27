@@ -284,7 +284,8 @@ class FHMM(Disaggregator):
             learnt_model[meter] = hmm.GaussianHMM(num_total_states, "full")
 
             # Fit
-            learnt_model[meter].fit([X])
+            learnt_model[meter].fit([X]) # learnt_model[meter].fit([x for x in X])
+            # Original: learnt_model[meter].fit([X])
 
             # Check to see if there are any more chunks.
             # TODO handle multiple chunks per appliance.
