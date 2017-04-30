@@ -98,7 +98,7 @@ class DummyDisaggregator(Disaggregator):
       # represents a disaggregated appliance with column names corresponding to
       # the integer indices of the appliances in `self.model`.
       appliance_powers = self.disaggregate_chunk(chunk)
-      print('Disaggregated appliances:\n%s' % (appliance_powers))
+      print('Disaggregated data %s:\n%s' % (appliance_powers.shape, appliance_powers.head()))
       # Convert the dataframe into XX??
       for i, model in enumerate(self.model):
         meter = model['training_metadata']
@@ -113,8 +113,9 @@ class DummyDisaggregator(Disaggregator):
         cols = pd.MultiIndex.from_tuples([chunk.name])
         df = pd.DataFrame(appliance_power.values, index=appliance_power.index,
             columns=cols)
-        print('Disaggregation result for model %s:\n%s' % (i, df))
         key = '{}/elec/meter{}'.format(building_path, meter.instance())
+        print('Storing disaggregation result for model [%d] under key %s:\n%s\n%s\n%s'
+            % (i, key, df.head(), df.tail(), df.describe()))
         output_datastore.append(key, df)
       # Copy mains data to disag output
       mains_df = pd.DataFrame(chunk, columns=cols)

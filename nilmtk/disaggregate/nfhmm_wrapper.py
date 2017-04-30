@@ -23,13 +23,17 @@ class NFHMMDisaggregator(Disaggregator):
     Minimum supported chunk length.
   """
 
-  def __init__(self):
+  def __init__(self, heuristic_parameter=40, sampling_iterations=20):
     self.MODEL_NAME = 'NFHMM'
     self.MIN_CHUNK_LENGTH = 100
+    self.MAX_DISAG_ATTEMPTS_PER_CHUNK = 5
+    self.HEURISTIC_PARAMETER = heuristic_parameter
+    self.SAMPLING_ITERATIONS = sampling_iterations
+    self.DISAG_ATTEMPT_TIMEOUT = 30 + 10*self.SAMPLING_ITERATIONS # [seconds]
     self.NFHMM_ROOT_DIR = '/home/smarisa/snc/git/sor-nilm'
     self.model = True
 
-  def train(self, metergroup, num_states_dict=None, **load_kwargs):
+  def train(self, metergroup, **load_kwargs):
     """Train the unsupervised NFHMM model using only site meter data.
 
     FIXME, now it does both training and disaggregation in the
@@ -38,7 +42,6 @@ class NFHMMDisaggregator(Disaggregator):
     Parameters
     ----------
     metergroup : a nilmtk.MeterGroup object
-    num_states_dict : dict
     **load_kwargs : keyword arguments passed to `meter.power_series()`
     """
     pass
@@ -46,7 +49,7 @@ class NFHMMDisaggregator(Disaggregator):
   def train_on_chunk(self, chunk, meter):
     pass
 
-  def disaggregate(self, mains, output_datastore, **load_kwargs):
+  def disaggregate(self, mains, output_datastore, max_appliances, **load_kwargs):
     """Disaggregate mains with the NFHMM algorithm.
 
     Parameters
@@ -54,6 +57,7 @@ class NFHMMDisaggregator(Disaggregator):
     mains : nilmtk.ElecMeter or nilmtk.MeterGroup
     output_datastore : instance of nilmtk.DataStore subclass
         For storing power predictions from disaggregation algorithm.
+    max_appliances : int, maximum number of appliances to disaggregate mains into
     sample_period : number, optional
         The desired sample period in seconds. Set to 60 by default.
     sections : TimeFrameGroup, optional
@@ -64,7 +68,8 @@ class NFHMMDisaggregator(Disaggregator):
     # Run any required pre disaggregation checks
     load_kwargs = self._pre_disaggregation_checks(load_kwargs)
     # Set defaults
-    load_kwargs.setdefault('sample_period', 60)
+    load_kwargs.setdefault('sample_period', max(mains.sample_period(), 30))
+    load_kwargs.setdefault('chunksize', 8000*load_kwargs['sample_period']/mains.sample_period() - 1)
     load_kwargs.setdefault('sections', mains.good_sections())
     # Construct data paths
     building_path = '/building{}'.format(mains.building())
@@ -77,42 +82,51 @@ class NFHMMDisaggregator(Disaggregator):
       # Skip too short chunks
       if len(chunk) < self.MIN_CHUNK_LENGTH:
         continue
+      # Disaggregate the data chunk into a dataframe with an index equal to that
+      # of chunk and a column for each disaggregated appliance
+      appliance_powers = self.disaggregate_chunk(chunk, appliances=max_appliances)
+      # Ignore undisaggregateable chunks
+      if type(appliance_powers) != pd.DataFrame:
+        continue
+      # Ignore appliances found in excess
+      if appliance_powers.shape[1] > max_appliances:
+        print('Note: Ignoring %d excess appliances!'
+            % (appliance_powers.shape[1] - max_appliances))
+        appliance_powers.drop(appliance_powers.columns[range(max_appliances,
+            appliance_powers.shape[1])], axis=1, inplace=True)
+      print('Disaggregated data %s:\n%s' % (appliance_powers.shape, appliance_powers.head()))
+      # Create a multi index with the column headings of the mains power series
+      cols = pd.MultiIndex.from_tuples([chunk.name])
+      # Add the power series of each disaggregated appliance into the datastore
+      for i, appliance in enumerate(appliance_powers):
+        # Load the disaggregated time series for the appliance
+        appliance_power = appliance_powers[appliance]
+        # Reorganize the time series as a dataframe with the column headings
+        # of the mains power series
+        df = pd.DataFrame(appliance_power.values, index=appliance_power.index,
+            columns=cols)
+        key = '{}/elec/meter{}'.format(building_path, i+2) # meter1 is for mains
+        print('Storing disaggregation result for [%d] "%s" under key %s:\n%s\n%s\n%s'
+            % (i, appliance_powers.columns[i], key, df.head(), df.tail(), df.describe()))
+        output_datastore.append(key, df)
+      # Copy mains data to disag output
+      mains_df = pd.DataFrame(chunk, columns=cols, dtype='float64')
+      output_datastore.append(key=mains_data_location, value=mains_df)
       # Record metadata
       timeframes.append(chunk.timeframe)
       measurement = chunk.name
-      # Disaggregate the data chunk into a dataframe with an index equal to that
-      # of chunk and a column for each disaggregated appliance
-      appliance_powers = self.disaggregate_chunk(chunk)
-      print('Disaggregated appliances:\n%s' % (appliance_powers))
-      # Add the power series of each disaggregated appliance into the datastore
-      for i, appliance_power in enumerate(appliance_powers):
-        # Load the disaggregated time series for appliance `i`
-        appliance_power = appliance_powers[i]
-        # Skip it if empty
-        if len(appliance_power) == 0:
-          continue
-        # Reorganize the time series as a dataframe with the column headings
-        # of the mains power series
-        cols = pd.MultiIndex.from_tuples([chunk.name])
-        df = pd.DataFrame(appliance_power.values, index=appliance_power.index,
-            columns=cols)
-        print('Storing disaggregation result for meter %s:\n%s' % (i, df))
-        key = '{}/elec/meter{}'.format(building_path, i)
-        output_datastore.append(key, df)
-      # Copy mains data to disag output
-      mains_df = pd.DataFrame(chunk, columns=cols)
-      output_datastore.append(key=mains_data_location, value=mains_df)
     # Store all metadata into the datastore
     self._save_metadata_for_disaggregation(
-        output_datastore=output_datastore,
+        output_datastore=output_datastore, # target of data storage
         sample_period=load_kwargs['sample_period'],
-        measurement=measurement,
+        measurement=measurement, # eg. ("power", "active")
         timeframes=timeframes,
-        building=mains.building(),
-        meters=[i for i in range(len(appliance_powers))]
+        building=mains.building(), # building instance number
+        supervised=False, # this was unsupervised disaggregation
+        num_meters=appliance_powers.shape[1] # number of appliances/submeters
     )
 
-  def disaggregate_chunk(self, mains):
+  def disaggregate_chunk(self, mains, appliances=5):
     """In-memory disaggregation of mains data using the pre-trained model.
 
     The function writes the chunk into shared memory and then calls the actual
@@ -122,6 +136,7 @@ class NFHMMDisaggregator(Disaggregator):
     Parameters
     ----------
     mains : pd.Series
+    appliances : int, initial guess of the number of total appliances
 
     Returns
     -------
@@ -131,19 +146,37 @@ class NFHMMDisaggregator(Disaggregator):
     # Refuse too short chunks
     if len(mains) < self.MIN_CHUNK_LENGTH:
       raise RuntimeError('Chunk is too short.')
-    # Write the series into a CSV file
+    # Define temporary IO file paths
     pfi = '/run/shm/nfhmm_in.csv'
     pfo = '/run/shm/nfhmm_out.csv'
-    mains.to_csv(pfi)
+    # Write the series into a CSV file with specific column headings
+    chunk = pd.Series(mains, name='Aggregate')
+    chunk.to_csv(pfi, index_label='Timestamp', header=True)
     # Run the actual R implementation of the algorithm
-    p = sp.Popen(shlexsplit('Rscript src/r_fhmm.R -b -i "%s" -o "%s" -v' % (pfi, pfo)),
-        cwd=self.NFHMM_ROOT_DIR)
-    p.wait()
-    print('NFHMM R implementation finished with rv %d!' % (p.returncode))
-    # Reand the disaggregation results into a dataframe and return it
+    cmd = 'Rscript src/r_fhmm.R -b -i "%s" -o "%s" -a %d -p %d -n %d -v' \
+        % (pfi, pfo, appliances, self.HEURISTIC_PARAMETER, self.SAMPLING_ITERATIONS)
+    for i in range(1, self.MAX_DISAG_ATTEMPTS_PER_CHUNK+1):
+      print('Running "%s" (timeout=%ds)...' % (cmd, self.DISAG_ATTEMPT_TIMEOUT))
+      p = sp.Popen(shlexsplit(cmd), cwd=self.NFHMM_ROOT_DIR)
+      try:
+        p.wait(timeout=self.DISAG_ATTEMPT_TIMEOUT)
+        msg = 'with code %d' % (p.returncode)
+      except sp.TimeoutExpired:
+        p.kill()
+        msg = 'due to surpassing the timeout (%ds)' % (self.DISAG_ATTEMPT_TIMEOUT)
+      if p.returncode == 0:
+        break
+      print('Run attempt %d/%d failed %s!' % (i,
+          self.MAX_DISAG_ATTEMPTS_PER_CHUNK, msg))
+    if p.returncode != 0:
+      print('Warning: Disaggregating the chunk failed!')
+      return None
+    print('The R NFHMM implementation finished succesfully!')
+    # Read the disaggregation results into a dataframe
     appliance_powers = pd.read_csv(pfo)
-    print(appliance_powers.index)
-    print(mains.index)
+    # Reuse the existing index instead of the newly read timestamp column; These
+    # should be equal despite the frequency downsampling
+    del appliance_powers['Timestamp']
     appliance_powers.index = mains.index
     # Remove the temporary IO files
     for pf in pfi, pfo: os.unlink(pf)

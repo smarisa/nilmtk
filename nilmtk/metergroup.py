@@ -1368,12 +1368,10 @@ class MeterGroup(Electric):
             'sankey': self._plot_sankey,
             'energy bar': self._plot_energy_bar
         }
-        try:
-            ax = function_map[kind](**kwargs)
-        except KeyError:
+        if kind not in function_map:
             raise ValueError("'{}' not a valid setting for 'kind' parameter."
                              .format(kind))
-        return ax
+        return function_map[kind](**kwargs)
 
     def _plot_separate_lines(self, ax=None, plot_legend=True, **kwargs):
         for meter in self.meters:

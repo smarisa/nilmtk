@@ -131,7 +131,7 @@ class HDFDataStore(DataStore):
                     else:
                         data.look_ahead = pd.DataFrame()
 
-                data.timeframe = _timeframe_for_chunk(there_are_more_subchunks, 
+                data.timeframe = _timeframe_for_chunk(there_are_more_subchunks,
                                                       chunk_i, window_intersect,
                                                       data.index)
                 yield data
@@ -156,9 +156,9 @@ class HDFDataStore(DataStore):
 
     @doc_inherit
     def put(self, key, value):
-        self.store.put(key, value, format='table', 
+        self.store.put(key, value, format='table',
                        expectedrows=len(value), index=False)
-        self.store.create_table_index(key, columns=['index'], 
+        self.store.create_table_index(key, columns=['index'],
                                       kind='full', optlevel=9)
         self.store.flush()
 
@@ -201,7 +201,7 @@ class HDFDataStore(DataStore):
     @doc_inherit
     def open(self, mode='a'):
         self.store.open(mode=mode)
-        
+
     @doc_inherit
     def get_timeframe(self, key):
         """
@@ -213,12 +213,12 @@ class HDFDataStore(DataStore):
         data_end_date = self.store.select(key, start=-1).index[0]
         timeframe = TimeFrame(data_start_date, data_end_date)
         return self.window.intersection(timeframe)
-    
+
     def _check_columns(self, key, columns):
         if columns is None:
             return
         if not self._table_has_column_names(key, columns):
-            raise KeyError('at least one of ' + str(columns) + 
+            raise KeyError('at least one of ' + str(columns) +
                            ' is not a valid column')
 
     def _table_has_column_names(self, key, cols):
@@ -226,7 +226,7 @@ class HDFDataStore(DataStore):
         Parameters
         ----------
         cols : string or list of strings
-        
+
         Returns
         -------
         boolean
@@ -270,7 +270,7 @@ class HDFDataStore(DataStore):
             return est_mem_usage_for_index
         else:
             return est_mem_usage_for_data + est_mem_usage_for_index
-       
+
     def _nrows(self, key, timeframe=None):
         """
         Returns
@@ -288,7 +288,7 @@ class HDFDataStore(DataStore):
             storer = self._get_storer(key)
             nrows = storer.nrows
         return nrows
-    
+
     def _keys(self):
         return self.store.keys()
 
@@ -297,7 +297,7 @@ class HDFDataStore(DataStore):
         storer = self.store.get_storer(key)
         assert storer is not None, "cannot get storer for key = " + key
         return storer
-    
+
     def _check_key(self, key):
         """
         Parameters
@@ -306,7 +306,7 @@ class HDFDataStore(DataStore):
         """
         if key not in self._keys():
             raise KeyError(key + ' not in store')
-        
+
 
 def _timeframe_for_chunk(there_are_more_subchunks, chunk_i, window_intersect, index):
     start = None
