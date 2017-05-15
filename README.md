@@ -11,13 +11,14 @@ Aalto University course where student teams of three to five learn by working
 on a research project given by a company or research organization and report
 and compare their achievements with those of their peers.
 
-This repository is a fork of the NILMTK repository that was used to explore the
-toolkit and publicly available NILM datasets. As part of the project, converters
-for a synthetic dataset and a dataset provided by Fortum was developed in order
-to access the data through NILMTK. Also, a wrapper was implemented into this
-NILMTK fork that enables the use of an unsupervised NFHMM algorithm developed
-also as part of the project. The NFHMM algorithm was itself developed in R and
-is available in its [own repository](https://github.com/smarisa/sor-nilm).
+**This repository is a fork of the NILMTK repository that was used to explore
+the toolkit and publicly available NILM datasets. As part of the project,
+converters for two synthetic datasets and a dataset provided by Fortum was
+developed in order to access the data through NILMTK. Also, a wrapper was
+implemented into this NILMTK fork that enables the use of an unsupervised NFHMM
+algorithm which was also developed by us as part of the project.** The NFHMM
+algorithm was itself developed in R and is available in its [own
+repository](https://github.com/smarisa/sor-nilm).
 
 The Fortum dataset is not public. However, the performance of the NFHMM
 algorithm was explored also against the two synthetic datasets we generated.
@@ -51,10 +52,10 @@ simple supervised disaggregator developed in order to test and demonstrate how
 disaggregators can be developed for NILMTK. Some disaggregation result plots are
 also available in the ``results`` folder.
 
-*A report was written to document, present and ponder on the results of the
+**A report was written to document, present and ponder on the results of the
 project but unfortunately it is not public at the moment. Also, while it should
 be rather straightforward in principle to test our datasets and NFHMM algorithm
-yourself few attempts have been made to make it very easy.* It may be wise to
+yourself few attempts have been made to make it very easy.** It may be wise to
 download, install and familiarize yourself with the main NILMTK repository
 first and only then explore and test each extension in this repository.
 Familiarity with NILMTK is thus very useful.
