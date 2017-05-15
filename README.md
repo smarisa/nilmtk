@@ -1,78 +1,74 @@
-# NILMTK: Non-Intrusive Load Monitoring Toolkit
+# NILMTK for SOR 2017
 
-Non-Intrusive Load Monitoring (NILM) is the process of estimating the
-energy consumed by individual appliances given just a whole-house
-power meter reading.  In other words, it produces an (estimated)
-itemised energy bill from just a single, whole-house power meter.
+NILMTK is a toolkit developed by NILM researchers to speed up the pace of
+progress in the field. See the
+[NILMTK paper](http://arxiv.org/pdf/1404.3878v1.pdf)
+and [the original NILMTK repository](https://github.com/nilmtk/nilmtk) and
+documentation for more information.
 
-NILM is sometimes called:
+SOR or MS-E2177 Seminar on Case Studies in Operations Research (5 cr) is an
+Aalto University course where student teams of three to five learn by working
+on a research project given by a company or research organization and report
+and compare their achievements with those of their peers.
 
-* "non-intrusive appliance load monitoring (NALM or NIALM)"
-* "[electriciy | energy | smart meter] disaggregation"
+This repository is a fork of the NILMTK repository that was used to explore the
+toolkit and publicly available NILM datasets. As part of the project, converters
+for a synthetic dataset and a dataset provided by Fortum was developed in order
+to access the data through NILMTK. Also, a wrapper was implemented into this
+NILMTK fork that enables the use of an unsupervised NFHMM algorithm developed
+also as part of the project. The NFHMM algorithm was itself developed in R and
+is available in its [own repository](https://github.com/smarisa/sor-nilm).
 
-NILMTK is a toolkit designed to help *researchers* evaluate the
-accuracy of NILM algorithms. **NILMTK is not yet suitable for end
-users because NILMTK is not yet capable of out-of-the-box
-disaggregation (i.e. disaggregation where you do not yet have
-submetered training data), although we hope that it might be some time
-in the future**.
+The Fortum dataset is not public. However, the performance of the NFHMM
+algorithm was explored also against the two synthetic datasets we generated.
+The synthetic datasets as well as the code used to generate them is included in
+this fork in the ``test`` directory.
 
+The converters developed for the synthetic datasets and the Fortum dataset are
+at ``nilmtk/dataset_converters/sortd/convert_sortd.py`` and
+``nilmtk/dataset_converters/fortum/convert_fortum.py``, respectively.
 
-# Why a toolkit for NILM?
+The NFHMM wrapper was implemented to ``nilmtk/disaggregate/nfhmm_wrapper.py``.
 
-We quote our [NILMTK paper](http://arxiv.org/pdf/1404.3878v1.pdf)
-explaining the need for a NILM toolkit:
+NILMTK was also extended with several scripts located at the ``scripts``
+folder. The ``fortum_data_converter.py`` was created to prune and reorganize
+the data of the Fortum dataset into a more suitable CSV format. The dataset
+converter mentioned above was developed to convert the results of this script.
+Note that appropriate metadata is required as well as the data which are
+currently both unpublished.
 
-  > Empirically comparing disaggregation algorithms is currently
-  > virtually impossible. This is due to the different data sets used,
-  > the lack of reference implementations of these algorithms and the
-  > variety of accuracy metrics employed.
+The ``dsexp.py`` and ``daexp.py`` scripts were developed in order to explore
+datasets and disaggregators, respectively. For the most part, they were means
+by which the authors also learned hands-on how to use NILMTK.
 
+The ``comparison.py`` script was used to compare the performance of the NFHMM
+algorithm we developed with the CO and FHMM algorithms already implemented in
+NILMTK and to generate related material for a report.
 
-# What NILMTK provides
+Some other files were also created into the repo during the learning and
+testing phases like ``nilmtk/disaggregate/dummy.py`` which is an extremely
+simple supervised disaggregator developed in order to test and demonstrate how
+disaggregators can be developed for NILMTK. Some disaggregation result plots are
+also available in the ``results`` folder.
 
-To address this challenge, we present the Non-intrusive Load Monitoring
-Toolkit (NILMTK); an open source toolkit designed specifically to enable
-the comparison of energy disaggregation algorithms in a reproducible
-manner. This work is the first research to compare multiple
-disaggregation approaches across multiple publicly available data sets.
-NILMTK includes:
+*A report was written to document, present and ponder on the results of the
+project but unfortunately it is not public at the moment. Also, while it should
+be rather straightforward in principle to test our datasets and NFHMM algorithm
+yourself few attempts have been made to make it very easy.* It may be wise to
+download, install and familiarize yourself with the main NILMTK repository
+first and only then explore and test each extension in this repository.
+Familiarity with NILMTK is thus very useful.
 
--  parsers for a range of existing data sets (8 and counting)
--  a collection of preprocessing algorithms
--  a set of statistics for describing data sets
--  a number of [reference benchmark disaggregation algorithms](https://github.com/nilmtk/nilmtk/wiki/NILM-Algorithms)
--  a common set of accuracy metrics
--  and much more!
+Please contact the contributors for more information.
 
+## Contributors
 
-# Documentation
+Course project team:
 
-[NILMTK Documentation](https://github.com/nilmtk/nilmtk/tree/master/docs/manual)
+* Samuel Marisa, samuel.marisa, aalto.fi
+* Mihail Douhaniaris
+* Matias Peljo
+* Johan Salmelin
 
-
-# Publications
-
-Please see our [list of NILMTK publications](http://nilmtk.github.io/#publications).  If you use NILMTK in academic work then please consider citing our papers.
-
-Please note that NILMTK has evolved *a lot* since these papers were published! Please use the
-[online docs](https://github.com/nilmtk/nilmtk/tree/master/docs/manual)
-as a guide to the current API.
-
-
-# Keeping up to date with NILMTK
-
-* [NILMTK-Announce mailing list](https://groups.google.com/forum/#!forum/nilmtk-announce): stay up to speed with NILMTK.  This is a low-traffic mailing list.  We'll just announce new versions, new docs etc.
-* [NILMTK on Twitter](https://twitter.com/nilmtk).
-
-
-# History
-
-* April 2014: v0.1 released
-* June 2014: NILMTK presented at [ACM e-Energy](http://conferences.sigcomm.org/eenergy/2014/)
-* July 2014: v0.2 released
-* Nov 2014: NILMTK wins best demo award at [ACM BuildSys](http://www.buildsys.org/2014/)
-
-For more detail, please see our [changelog](https://github.com/nilmtk/nilmtk/blob/master/docs/manual/development_guide/changelog.md).
-
-[![Build Status](https://travis-ci.org/nilmtk/nilmtk.svg?branch=master)](https://travis-ci.org/nilmtk/nilmtk)
+See NILMTK contributors from the
+[NILMTK repository](https://github.com/nilmtk/nilmtk).

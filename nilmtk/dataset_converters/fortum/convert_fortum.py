@@ -51,8 +51,8 @@ def convert_fortum(input_path, output_filename, format='HDF'):
         key = Key(building=building_id, meter=meter_id)
         # Load the raw data from the data location
         print('  - Loading meter %s from %s...' % (meter_id, meter_data['data_location']))
-        columns = [('power', 'active')]
-        df = pd.read_csv(join(input_path, meter_data['data_location']), sep=',', names=columns, dtype={m: np.float32 for m in columns})
+        columns = [('current', '') if meter_data['device_model'] == 'Fortum1Hz3PMeter' else ('power', 'active')]
+        df = pd.read_csv(join(input_path, meter_data['data_location']), sep=',', names=columns, dtype={m: np.float32 for m in columns}, skiprows=[0])
         # Convert the timestamp index column to timezone-aware datetime
         df.index = pd.to_datetime(df.index.values, unit='s', utc=True)
         df = df.tz_convert(TZ)

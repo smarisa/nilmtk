@@ -2,7 +2,7 @@
 """
 dsexp.py -- Explore dataset disaggregators.
 
-Usage: python3 dsexp.py DATASET
+Usage: python3 scripts/dsexp.py DATASET
 
 where DATASET is one of sortd, fortum or eco.
 
@@ -36,7 +36,7 @@ datastore_file_str = str(datastore_file)
 if not datastore_file.exists():
   if dataset_name.startswith('sortd'):
     ntkdsc.convert_sortd(dataset_directory_str, datastore_file_str)
-  elif dataset_name == 'fortum':
+  elif dataset_name.startswith('fortum'):
     ntkdsc.convert_fortum(dataset_directory_str, datastore_file_str)
   elif dataset_name == 'eco':
     ntkdsc.convert_eco(dataset_directory_str, datastore_file_str, 'CET')
@@ -62,7 +62,7 @@ for bkey in dataset.buildings:
   _, ax = elec.draw_wiring_graph()
   ax.set_title("Ground truth wiring graph");
   plt.savefig('results/%s__b%d__wiring__truth.png' % (dataset_name, bkey)); plt.clf()
-  ax = elec.plot()
+  ax = elec.plot() # [4], cols=[('power', 'active')]  physical_quantity='power', ac_type='active')
   ax.set_title("Ground truth data");
   plt.savefig('results/%s__b%d__elec__truth.png' % (dataset_name, bkey)); plt.clf()
   print('\n== elec.mains().good_sections()')
@@ -75,72 +75,111 @@ else:
   train_building = 1
   disag_building = 2
 
-## Dummy training and disaggregation
+#~ ## Dummy training and disaggregation
+
+#~ ### Training
+#~ dum = DummyDisaggregator()
+#~ print('\n== dum.train(dataset.buildings[%d].elec)' % (train_building))
+#~ dum.train(dataset.buildings[train_building].elec)
+
+#~ ### Disaggregation
+#~ dum_outfile = dataset_directory / ('%s-da-co.h5' % (dataset_name.lower()))
+#~ output = HDFDataStore(str(dum_outfile), 'w')
+#~ print('\n== dum.disaggregate(dataset.buildings[%d].mains(), output)' % (disag_building))
+#~ dum.disaggregate(dataset.buildings[disag_building].elec.mains(), output)
+#~ output.close()
+
+#~ ### Results
+#~ print('\n== Plotting Dummy disaggregation results...')
+#~ da_data = DataSet(str(dum_outfile))
+#~ da_elec = da_data.buildings[disag_building].elec
+#~ ax = da_elec.plot()
+#~ ax.set_title("Dummy disaggregation results");
+#~ plt.savefig('results/%s__b%d__elec__dummy.png' % (dataset_name, disag_building)); plt.clf()
+#~ f1 = f1_score(da_elec, dataset.buildings[disag_building].elec)
+#~ f1.index = da_elec.get_labels([int(i) for i in f1.index])
+#~ ax = f1.plot(kind='barh')
+#~ ax.set_ylabel('appliance');
+#~ ax.set_xlabel('f-score');
+#~ ax.set_title("Dummy disaggregation accuracy");
+#~ plt.savefig('results/%s__b%d__fscore__dummy.png' % (dataset_name, disag_building)); plt.clf()
+#~ da_data.store.close()
+
+#~ ## CO training and disaggregation
+
+#~ ### Training
+#~ co = CombinatorialOptimisation()
+#~ print('\n== co.train(dataset.buildings[%d].elec)' % (train_building))
+#~ co.train(dataset.buildings[train_building].elec)
+
+#~ ### Disaggregation
+#~ co_outfile = dataset_directory / ('%s-da-co.h5' % (dataset_name.lower()))
+#~ output = HDFDataStore(str(co_outfile), 'w')
+#~ print('\n== co.disaggregate(dataset.buildings[%d].mains(), output)' % (disag_building))
+#~ co.disaggregate(dataset.buildings[disag_building].elec.mains(), output)
+#~ output.close()
+
+#~ ### Results
+#~ print('\n== Plotting CO disaggregation results...')
+#~ da_data = DataSet(str(co_outfile))
+#~ da_elec = da_data.buildings[disag_building].elec
+#~ print('\n== da_elec.meters')
+#~ print(da_elec.meters)
+#~ print('\n== da_elec.appliances')
+#~ print(da_elec.appliances)
+#~ _, ax = da_elec.draw_wiring_graph()
+#~ ax.set_title("CO wiring graph")
+#~ plt.savefig('results/%s__b%d__wiring__co.png' % (dataset_name, disag_building)); plt.clf()
+#~ ax = da_elec.plot()
+#~ ax.set_title("CO disaggregation results");
+#~ plt.savefig('results/%s__b%d__elec__co.png' % (dataset_name, disag_building)); plt.clf()
+#~ f1 = f1_score(da_elec, dataset.buildings[disag_building].elec)
+#~ f1.index = da_elec.get_labels([int(i) for i in f1.index])
+#~ ax = f1.plot(kind='barh')
+#~ ax.set_ylabel('appliance');
+#~ ax.set_xlabel('f-score');
+#~ ax.set_title("CO disaggregation accuracy");
+#~ plt.savefig('results/%s__b%d__fscore__co.png' % (dataset_name, disag_building)); plt.clf()
+#~ da_data.store.close()
+
+## FHMM training and disaggregation
 
 ### Training
-dum = DummyDisaggregator()
-print('\n== dum.train(dataset.buildings[%d].elec)' % (train_building))
-dum.train(dataset.buildings[train_building].elec)
+fhmm = fhmm_exact.FHMM()
+print('\n== fhmm.train(dataset.buildings[%d].elec)' % (train_building))
+fhmm.train(dataset.buildings[train_building].elec)
 
 ### Disaggregation
-dum_outfile = dataset_directory / ('%s-da-co.h5' % (dataset_name.lower()))
-output = HDFDataStore(str(dum_outfile), 'w')
-print('\n== dum.disaggregate(dataset.buildings[%d].mains(), output)' % (disag_building))
-dum.disaggregate(dataset.buildings[disag_building].elec.mains(), output)
+fhmm_outfile = dataset_directory / ('%s-da-fhmm.h5' % (dataset_name.lower()))
+output = HDFDataStore(str(fhmm_outfile), 'w')
+print('\n== fhmm.disaggregate(dataset.buildings[%d].mains(), output)' % (disag_building))
+fhmm.disaggregate(dataset.buildings[disag_building].elec.mains(), output)
 output.close()
 
 ### Results
-print('\n== Plotting Dummy disaggregation results...')
-da_data = DataSet(str(dum_outfile))
-da_elec = da_data.buildings[disag_building].elec
-ax = da_elec.plot()
-ax.set_title("Dummy disaggregation results");
-plt.savefig('results/%s__b%d__elec__dummy.png' % (dataset_name, disag_building)); plt.clf()
-f1 = f1_score(da_elec, dataset.buildings[disag_building].elec)
-f1.index = da_elec.get_labels([int(i) for i in f1.index])
-ax = f1.plot(kind='barh')
-ax.set_ylabel('appliance');
-ax.set_xlabel('f-score');
-ax.set_title("Dummy disaggregation accuracy");
-plt.savefig('results/%s__b%d__fscore__dummy.png' % (dataset_name, disag_building)); plt.clf()
-da_data.store.close()
-
-## CO training and disaggregation
-
-### Training
-co = CombinatorialOptimisation()
-print('\n== co.train(dataset.buildings[%d].elec)' % (train_building))
-co.train(dataset.buildings[train_building].elec)
-
-### Disaggregation
-co_outfile = dataset_directory / ('%s-da-co.h5' % (dataset_name.lower()))
-output = HDFDataStore(str(co_outfile), 'w')
-print('\n== co.disaggregate(dataset.buildings[%d].mains(), output)' % (disag_building))
-co.disaggregate(dataset.buildings[disag_building].elec.mains(), output)
-output.close()
-
-### Results
-print('\n== Plotting CO disaggregation results...')
-da_data = DataSet(str(co_outfile))
+print('\n== Plotting FHMM disaggregation results...')
+da_data = DataSet(str(fhmm_outfile))
 da_elec = da_data.buildings[disag_building].elec
 print('\n== da_elec.meters')
 print(da_elec.meters)
 print('\n== da_elec.appliances')
 print(da_elec.appliances)
 _, ax = da_elec.draw_wiring_graph()
-ax.set_title("CO wiring graph")
+ax.set_title("FHMM wiring graph")
 plt.savefig('results/%s__b%d__wiring__co.png' % (dataset_name, disag_building)); plt.clf()
 ax = da_elec.plot()
-ax.set_title("CO disaggregation results");
-plt.savefig('results/%s__b%d__elec__co.png' % (dataset_name, disag_building)); plt.clf()
+ax.set_title("FHMM disaggregation results");
+plt.savefig('results/%s__b%d__elec__fhmm.png' % (dataset_name, disag_building)); plt.clf()
 f1 = f1_score(da_elec, dataset.buildings[disag_building].elec)
 f1.index = da_elec.get_labels([int(i) for i in f1.index])
 ax = f1.plot(kind='barh')
 ax.set_ylabel('appliance');
 ax.set_xlabel('f-score');
-ax.set_title("CO disaggregation accuracy");
-plt.savefig('results/%s__b%d__fscore__co.png' % (dataset_name, disag_building)); plt.clf()
+ax.set_title("FHMM disaggregation accuracy");
+plt.savefig('results/%s__b%d__fscore__fhmm.png' % (dataset_name, disag_building)); plt.clf()
 da_data.store.close()
+
+sys.exit(0)
 
 ## NFHMM training and disaggregation
 vconf = [
@@ -152,14 +191,14 @@ vconf = [
   #~ (10,  40,  30),
   #~ (20,  40,  30),
   #~ (40,  40,  30),
-  ( 5,  60,  30),
-  (10,  60,  30),
-  (20,  60,  30),
-  (40,  60,  30),
-#  ( 5, 120,  30),
-#  (10, 120,  30),
-#  (20, 120,  30),
-#  (40, 120,  30),
+  #~ ( 5,  60,  30),
+  #~ (10,  60,  30),
+  #~ (20,  60,  30),
+  #~ (40,  60,  30),
+  #~ ( 5, 120,  30),
+  #~ (10, 120,  30),
+  (20, 120,  30),
+  #~ (40, 120,  30),
   #~ (10,  20,  60),
   #~ (20,  20,  60),
   #~ (40,  20,  60),
@@ -224,14 +263,5 @@ for hp, si, sp in vconf:
   da_data.store.close()
 
 sys.exit()
-
-## FHMM training and disaggregation
-
-### Training
-
-#~ fhmm = fhmm_exact.FHMM()
-#~ fhmm.train(dataset.buildings[train_building].elec)
-
-### Disaggregation
 
 # TODO

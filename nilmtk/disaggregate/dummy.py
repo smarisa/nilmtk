@@ -56,7 +56,7 @@ class DummyDisaggregator(Disaggregator):
     # Load the model dict for this meter
     model = [model for model in self.model if model['training_metadata'] == meter][0]
     # The model is updated to simply reflect the mean of the last chunk
-    print('Training model meter %s with chunk:\n%s' % (meter, chunk))
+    print('Training model meter %s with chunk:\n%s' % (meter, chunk.describe()))
     model['mean'] = chunk.mean()
     print('Mean: %s' % (model['mean']))
 

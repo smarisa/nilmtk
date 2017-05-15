@@ -29,7 +29,7 @@ class NFHMMDisaggregator(Disaggregator):
     self.MAX_DISAG_ATTEMPTS_PER_CHUNK = 5
     self.HEURISTIC_PARAMETER = heuristic_parameter
     self.SAMPLING_ITERATIONS = sampling_iterations
-    self.DISAG_ATTEMPT_TIMEOUT = 30 + 10*self.SAMPLING_ITERATIONS # [seconds]
+    self.DISAG_ATTEMPT_TIMEOUT = 30 + 40*self.SAMPLING_ITERATIONS # [seconds]
     self.NFHMM_ROOT_DIR = '/home/smarisa/snc/git/sor-nilm'
     self.model = True
 
@@ -69,7 +69,7 @@ class NFHMMDisaggregator(Disaggregator):
     load_kwargs = self._pre_disaggregation_checks(load_kwargs)
     # Set defaults
     load_kwargs.setdefault('sample_period', max(mains.sample_period(), 30))
-    load_kwargs.setdefault('chunksize', 8000*load_kwargs['sample_period']/mains.sample_period() - 1)
+    load_kwargs.setdefault('chunksize', 200000*load_kwargs['sample_period']/mains.sample_period() - 1)
     load_kwargs.setdefault('sections', mains.good_sections())
     # Construct data paths
     building_path = '/building{}'.format(mains.building())

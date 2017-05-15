@@ -2,7 +2,7 @@
 """
 dsexp.py -- Explore datasets.
 
-Usage: python3 dsexp.py DATASET
+Usage: python3 scripts/dsexp.py DATASET
 
 where DATASET is one of sortd, fortum or eco.
 
@@ -30,7 +30,7 @@ datastore_file_str = str(datastore_file)
 if not datastore_file.exists():
   if dataset_name.startswith('sortd'):
     ntkdsc.convert_sortd(dataset_directory_str, datastore_file_str)
-  elif dataset_name == 'fortum':
+  elif dataset_name.startswith('fortum'):
     ntkdsc.convert_fortum(dataset_directory_str, datastore_file_str)
   elif dataset_name == 'eco':
     ntkdsc.convert_eco(dataset_directory_str, datastore_file_str, 'CET')
