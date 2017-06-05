@@ -53,12 +53,13 @@ disaggregators can be developed for NILMTK. Some disaggregation result plots are
 also available in the ``results`` folder.
 
 **A report was written to document, present and ponder on the results of the
-project but unfortunately it is not public at the moment. Also, while it should
-be rather straightforward in principle to test our datasets and NFHMM algorithm
-yourself few attempts have been made to make it very easy.** It may be wise to
-download, install and familiarize yourself with the main NILMTK repository
-first and only then explore and test each extension in this repository.
-Familiarity with NILMTK is thus very useful.
+project** and it is available in the
+[repo](https://github.com/smarisa/sor-nilm) that also contains the NFHMM
+implementation. Also, **while it should be rather straightforward in principle to
+test our datasets and NFHMM algorithm yourself few attempts have been made to
+make it very easy.** It may be wise to download, install and familiarize
+yourself with the main NILMTK repository first and only then explore and test
+each extension in this repository. Familiarity with NILMTK is thus very useful.
 
 Please contact the contributors for more information.
 
